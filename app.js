@@ -15,14 +15,11 @@ app.use(express.static('public'));
 // ==========================
 // CONFIGURACIÓN AWS
 // ==========================
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
+const AWS = require('aws-sdk');
+
+const dynamodb = new AWS.DynamoDB.DocumentClient({
+    region: process.env.AWS_REGION || 'us-east-1'
 });
-
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-
 
 // ==========================
 // RUTA PRINCIPAL (IMPORTANTE PARA RENDER)
