@@ -2,39 +2,53 @@ const express = require('express');
 const AWS = require('aws-sdk');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
 
-
 // CARPETA PUBLIC
 app.use(express.static('public'));
 
 
-require('dotenv').config();
-
+// ==========================
+// CONFIGURACIÓN AWS
+// ==========================
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION
 });
 
-// CONEXIÓN DYNAMODB
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 
 // ==========================
-// CREAR PRODUCTO
+// RUTA PRINCIPAL (IMPORTANTE PARA RENDER)
+// ==========================
+app.get('/', (req, res) => {
+    res.json({
+        mensaje: "API CRUD DynamoDB activa 🚀",
+        rutas: {
+            crear: "POST /productos",
+            listar: "GET /productos",
+            actualizar: "PUT /productos/:id",
+            eliminar: "DELETE /productos/:id"
+        }
+    });
+});
+
+
+// ==========================
+// CREATE - PRODUCTO
 // ==========================
 app.post('/productos', async (req, res) => {
 
     const { id, nombre, precio } = req.body;
 
-    // VALIDACIÓN
     if (!id || !nombre || !precio) {
-
         return res.status(400).json({
             mensaje: 'Todos los campos son obligatorios'
         });
@@ -42,15 +56,10 @@ app.post('/productos', async (req, res) => {
 
     const params = {
         TableName: 'Productos',
-        Item: {
-            id,
-            nombre,
-            precio
-        }
+        Item: { id, nombre, precio }
     };
 
     try {
-
         await dynamodb.put(params).promise();
 
         res.json({
@@ -58,19 +67,17 @@ app.post('/productos', async (req, res) => {
         });
 
     } catch (error) {
-
         console.log(error);
 
         res.status(500).json({
-            mensaje: 'Error al crear producto',
-            error
+            mensaje: 'Error al crear producto'
         });
     }
 });
 
 
 // ==========================
-// LEER PRODUCTOS
+// READ - PRODUCTOS
 // ==========================
 app.get('/productos', async (req, res) => {
 
@@ -79,49 +86,37 @@ app.get('/productos', async (req, res) => {
     };
 
     try {
-
         const data = await dynamodb.scan(params).promise();
-
         res.json(data.Items);
 
     } catch (error) {
-
         console.log(error);
 
         res.status(500).json({
-            mensaje: 'Error al obtener productos',
-            error
+            mensaje: 'Error al obtener productos'
         });
     }
 });
 
 
 // ==========================
-// ACTUALIZAR PRODUCTO
+// UPDATE - PRODUCTO
 // ==========================
 app.put('/productos/:id', async (req, res) => {
 
     const { nombre, precio } = req.body;
 
     const params = {
-
         TableName: 'Productos',
-
-        Key: {
-            id: req.params.id
-        },
-
+        Key: { id: req.params.id },
         UpdateExpression: 'set nombre = :n, precio = :p',
-
         ExpressionAttributeValues: {
             ':n': nombre,
             ':p': precio
         }
-
     };
 
     try {
-
         await dynamodb.update(params).promise();
 
         res.json({
@@ -129,34 +124,26 @@ app.put('/productos/:id', async (req, res) => {
         });
 
     } catch (error) {
-
         console.log(error);
 
         res.status(500).json({
-            mensaje: 'Error al actualizar producto',
-            error
+            mensaje: 'Error al actualizar producto'
         });
     }
 });
 
 
 // ==========================
-// ELIMINAR PRODUCTO
+// DELETE - PRODUCTO
 // ==========================
 app.delete('/productos/:id', async (req, res) => {
 
     const params = {
-
         TableName: 'Productos',
-
-        Key: {
-            id: req.params.id
-        }
-
+        Key: { id: req.params.id }
     };
 
     try {
-
         await dynamodb.delete(params).promise();
 
         res.json({
@@ -164,12 +151,10 @@ app.delete('/productos/:id', async (req, res) => {
         });
 
     } catch (error) {
-
         console.log(error);
 
         res.status(500).json({
-            mensaje: 'Error al eliminar producto',
-            error
+            mensaje: 'Error al eliminar producto'
         });
     }
 });
@@ -178,8 +163,8 @@ app.delete('/productos/:id', async (req, res) => {
 // ==========================
 // SERVIDOR
 // ==========================
-app.listen(3000, () => {
+const PORT = process.env.PORT || 3000;
 
-    console.log('Servidor funcionando en puerto 3000');
-
+app.listen(PORT, () => {
+    console.log(`Servidor funcionando en puerto ${PORT}`);
 });
