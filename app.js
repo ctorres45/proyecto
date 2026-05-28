@@ -2,7 +2,6 @@ const express = require('express');
 const AWS = require('aws-sdk');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
 
