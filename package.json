@@ -1,14 +1,11 @@
 {
   "name": "crud-dynamodb",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "test": "echo \"Error no test\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.1693.0",
     "body-parser": "^2.2.2",
