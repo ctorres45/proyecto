@@ -5,24 +5,26 @@ const cors = require('cors');
 
 const app = express();
 
+// ==========================
+// MIDDLEWARES
+// ==========================
 app.use(cors());
 app.use(bodyParser.json());
-
-// CARPETA PUBLIC
 app.use(express.static('public'));
 
-
 // ==========================
-// CONFIGURACIÓN AWS
+// CONFIGURACIÓN AWS (CORRECTA)
 // ==========================
-const AWS = require('aws-sdk');
-
-const dynamodb = new AWS.DynamoDB.DocumentClient({
-    region: process.env.AWS_REGION || 'us-east-1'
+AWS.config.update({
+    region: process.env.AWS_REGION || 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+
 // ==========================
-// RUTA PRINCIPAL (IMPORTANTE PARA RENDER)
+// RUTA PRINCIPAL (Render check)
 // ==========================
 app.get('/', (req, res) => {
     res.json({
@@ -36,12 +38,10 @@ app.get('/', (req, res) => {
     });
 });
 
-
 // ==========================
-// CREATE - PRODUCTO
+// CREATE
 // ==========================
 app.post('/productos', async (req, res) => {
-
     const { id, nombre, precio } = req.body;
 
     if (!id || !nombre || !precio) {
@@ -57,49 +57,32 @@ app.post('/productos', async (req, res) => {
 
     try {
         await dynamodb.put(params).promise();
-
-        res.json({
-            mensaje: 'Producto creado correctamente'
-        });
-
+        res.json({ mensaje: 'Producto creado correctamente' });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            mensaje: 'Error al crear producto'
-        });
+        res.status(500).json({ mensaje: 'Error al crear producto' });
     }
 });
 
-
 // ==========================
-// READ - PRODUCTOS
+// READ
 // ==========================
 app.get('/productos', async (req, res) => {
-
-    const params = {
-        TableName: 'Productos'
-    };
+    const params = { TableName: 'Productos' };
 
     try {
         const data = await dynamodb.scan(params).promise();
         res.json(data.Items);
-
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            mensaje: 'Error al obtener productos'
-        });
+        res.status(500).json({ mensaje: 'Error al obtener productos' });
     }
 });
 
-
 // ==========================
-// UPDATE - PRODUCTO
+// UPDATE
 // ==========================
 app.put('/productos/:id', async (req, res) => {
-
     const { nombre, precio } = req.body;
 
     const params = {
@@ -114,26 +97,17 @@ app.put('/productos/:id', async (req, res) => {
 
     try {
         await dynamodb.update(params).promise();
-
-        res.json({
-            mensaje: 'Producto actualizado correctamente'
-        });
-
+        res.json({ mensaje: 'Producto actualizado correctamente' });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            mensaje: 'Error al actualizar producto'
-        });
+        res.status(500).json({ mensaje: 'Error al actualizar producto' });
     }
 });
 
-
 // ==========================
-// DELETE - PRODUCTO
+// DELETE
 // ==========================
 app.delete('/productos/:id', async (req, res) => {
-
     const params = {
         TableName: 'Productos',
         Key: { id: req.params.id }
@@ -141,20 +115,12 @@ app.delete('/productos/:id', async (req, res) => {
 
     try {
         await dynamodb.delete(params).promise();
-
-        res.json({
-            mensaje: 'Producto eliminado correctamente'
-        });
-
+        res.json({ mensaje: 'Producto eliminado correctamente' });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            mensaje: 'Error al eliminar producto'
-        });
+        res.status(500).json({ mensaje: 'Error al eliminar producto' });
     }
 });
-
 
 // ==========================
 // SERVIDOR
@@ -162,5 +128,6 @@ app.delete('/productos/:id', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Servidor funcionando en puerto ${PORT}`);
-});// force redeploy fix
+    console.log("APP INICIANDO...");
+    console.log("Servidor funcionando en puerto", PORT);
+});
